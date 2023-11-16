@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/merlindorin/hoomy/cmd/filter"
-	"github.com/merlindorin/hoomy/cmd/globals"
+	"github.com/merlindorin/hoomy/cmd/hoomy/filter"
+	"github.com/merlindorin/hoomy/cmd/hoomy/globals"
 	"github.com/merlindorin/hoomy/internal/cmd"
 	v1 "github.com/merlindorin/hoomy/pkg/kizbox/api/v1"
 )

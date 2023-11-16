@@ -1,2 +1,6 @@
 .env
 .envrc
+.tool
+.task
+coverage.txt
+dist

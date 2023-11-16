@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/merlindorin/hoomy/cmd/filter"
-	"github.com/merlindorin/hoomy/cmd/globals"
+	"github.com/merlindorin/hoomy/cmd/hoomy/filter"
+	"github.com/merlindorin/hoomy/cmd/hoomy/globals"
 	"github.com/merlindorin/hoomy/internal/cmd"
 	"github.com/merlindorin/hoomy/pkg/kizbox"
 	"github.com/merlindorin/hoomy/pkg/kizbox/api/v1"
@@ -26,8 +26,7 @@ type VenitianCmd struct {
 	Close VenitianCloseCmd `cmd:"close" help:"Close stores. By default, it will close all stores"`
 }
 
-type VenitianListCmd struct {
-}
+type VenitianListCmd struct{}
 
 func (s VenitianListCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
 	logger, err := common.Logger()
@@ -51,8 +50,7 @@ func (s VenitianListCmd) Run(global *globals.Globals, common *cmd.Commons, paren
 	return nil
 }
 
-type VenitianOpenCmd struct {
-}
+type VenitianOpenCmd struct{}
 
 func (s VenitianOpenCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
 	logger, err := common.Logger()
@@ -100,8 +98,7 @@ func (s VenitianSetCmd) Run(global *globals.Globals, common *cmd.Commons, parent
 	return DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, commands...)
 }
 
-type VenitianCloseCmd struct {
-}
+type VenitianCloseCmd struct{}
 
 func (s VenitianCloseCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
 	logger, err := common.Logger()

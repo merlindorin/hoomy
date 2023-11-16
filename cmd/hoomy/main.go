@@ -4,9 +4,8 @@ import (
 	_ "embed"
 
 	"github.com/alecthomas/kong"
-	"github.com/joho/godotenv"
-	"github.com/merlindorin/hoomy/cmd/commands"
-	"github.com/merlindorin/hoomy/cmd/globals"
+	"github.com/merlindorin/hoomy/cmd/hoomy/commands"
+	"github.com/merlindorin/hoomy/cmd/hoomy/globals"
 	"github.com/merlindorin/hoomy/internal/cmd"
 )
 
@@ -18,10 +17,6 @@ var (
 	date        = "latest"
 	buildSource = "source"
 )
-
-func init() {
-	_ = godotenv.Load()
-}
 
 type CLI struct {
 	*cmd.Commons

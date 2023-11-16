@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/merlindorin/hoomy/cmd/filter"
+	"github.com/merlindorin/hoomy/cmd/hoomy/filter"
 	"github.com/merlindorin/hoomy/internal/cmd"
 	"github.com/merlindorin/hoomy/pkg/kizbox"
 	"go.uber.org/zap"

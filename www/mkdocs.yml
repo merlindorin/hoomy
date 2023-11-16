@@ -1,0 +1,66 @@
+site_name: Hoomy
+site_url: https://hoomy.dary.io
+site_description: Hoomy Website
+copyright: Made with ❤️ by Merlin.
+repo_name: merlindorin/hoomy
+repo_url: https://github.com/merlindorin/hoomy
+edit_uri: edit/main/www/docs/
+
+theme:
+  name: material
+  language: en
+  logo: static/avatar.png
+  favicon: static/favicon.ico
+  include_search_page: false
+  search_index_only: true
+  palette:
+    - media: "(prefers-color-scheme: light)"  # Light mode
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"  # Dark mode
+      scheme: slate
+      primary: light blue
+      accent: indigo
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.action.edit
+    - navigation.footer
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/hoomy
+
+nav:
+- Home: index.md
+- Development: development.md
+- Community:
+  - users.md
+  - contributing.md
+- links.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - footnotes

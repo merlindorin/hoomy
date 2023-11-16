@@ -1,8 +1,16 @@
+<div style="text-align: center">
+<img src="./assets/logo.png" style="padding: 15px; background: whitesmoke; border-radius: 25%; width: 200px; color-" />
+
 # Hoomy
 
 > Hoomy is a command-line interface (CLI) tool that streamlines the interaction and management of home automation
 > systems. Built with Go, Hoomy offers an efficient, platform-independent utility for automating tasks and managing smart
 > home devices.
+
+</div>
+
+---
+## Table of Contents
 
 <!-- TOC -->
 * [Hoomy](#hoomy)
@@ -17,7 +25,9 @@
   * [Building with GoReleaser](#building-with-goreleaser)
   * [Contributing](#contributing)
   * [License](#license)
+  * [References](#references)
 <!-- TOC -->
+---
 
 ## Features
 
@@ -105,26 +115,9 @@ docker pull ghcr.io/merlindorin/hoomy:latest
 docker run --rm -it ghcr.io/merlindorin/hoomy:latest <command>
 ```
 
-## Building with GoReleaser
+## Development
 
-Hoomy uses GoReleaser for reproducible builds and to manage releases:
-
-```bash
-goreleaser release --snapshot --skip-publish --rm-dist
-```
-
-Before creating a release, tag your code and push the tag:
-
-```bash
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
-
-Use GoReleaser to create the release:
-
-```bash
-goreleaser release
-```
+All information related to development can be found in [`DEVELOPMENT.md`](./DEVELOPMENT.md).
 
 ## Contributing
 
@@ -135,8 +128,9 @@ Your contributions to improve Hoomy are welcome. Open an issue or submit pull re
 Hoomy is released under a specific open-source license. Refer to the `licence` command within the application or view
 the `LICENSE` file in this repository for full details.
 
+## References
+
+- Icons: https://mageicons.com/
 ---
 
 *Hoomy is an independent project and not officially associated with Kizbox or Somfy.*
-
-```

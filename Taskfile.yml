@@ -1,0 +1,197 @@
+# https://taskfile.dev
+
+version: '3'
+
+env:
+  BINARY_NAME: hoomy
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+  # static file dirs
+  TOOL_DIR: .tool
+  TMP_DIR: .tmp
+
+vars:
+  NAME: 'hoomy'
+  DOCKER: '{{default "docker" .DOCKER}}'
+
+tasks:
+  default:
+    desc: Runs the default tasks
+    cmds:
+      - task: ci
+
+  binny:
+    internal: true
+    # desc: Get the binny tool
+    generates:
+      - "{{ .TOOL_DIR }}/binny"
+    status:
+      - "test -f {{ .TOOL_DIR }}/binny"
+    cmd: "curl -sSfL https://raw.githubusercontent.com/anchore/binny/main/install.sh | sh -s -- -b .tool"
+    silent: true
+
+  tools:
+    desc: Install all tools needed for CI and local development
+    deps: [binny]
+    aliases:
+      - bootstrap
+    generates:
+      - ".binny.yaml"
+      - "{{ .TOOL_DIR }}/*"
+    status:
+      - "{{ .TOOL_DIR }}/binny check -v"
+    cmd: "{{ .TOOL_DIR }}/binny install -v"
+    silent: true
+
+  update-tools:
+    desc: Update pinned versions of all tools to their latest available versions
+    deps: [binny]
+    generates:
+      - ".binny.yaml"
+      - "{{ .TOOL_DIR }}/*"
+    cmd: "{{ .TOOL_DIR }}/binny update -v"
+    silent: true
+
+  list-tools:
+    desc: List all tools needed for CI and local development
+    deps: [binny]
+    cmd: "{{ .TOOL_DIR }}/binny list"
+    silent: true
+
+  list-tool-updates:
+    desc: List all tools that are not up to date relative to the binny config
+    deps: [binny]
+    cmd: "{{ .TOOL_DIR }}/binny list --updates"
+    silent: true
+
+  dev:
+    desc: Setup git hooks
+    cmds:
+      - ln -s ../../scripts/pre-commit.sh .git/hooks/pre-commit
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: Build the binary
+    dir: 'cmd/{{.NAME}}'
+    generates:
+      - '{{.NAME}}/{{.BINARY_NAME}}'
+    cmds:
+      - go build -o {{.BINARY_NAME}} {{.CLI_ARGS}}
+
+  run:
+    desc: Run the binary
+    method: none
+    dir: 'cmd/{{.NAME}}'
+    sources:
+      - ./**/*.go
+    dotenv:
+      - '.env'
+      - '.env.dist'
+    cmds:
+      - go run . {{.CLI_ARGS}}
+
+  help:
+    desc: Get binary help
+    method: none
+    dir: 'cmd/{{.NAME}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - go run . --help {{.CLI_ARGS}}
+
+  test:
+    desc: Run tests
+    dir: 'cmd/{{.NAME}}'
+    env:
+      LC_ALL: C
+    vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+    cmds:
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+
+  cover:
+    desc: Open the cover tool
+    dir: 'cmd/{{.NAME}}'
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  fmt:
+    desc: gofumpt all code
+    cmds:
+      - '{{ .TOOL_DIR }}/gofumpt -w -l .'
+
+  lint:go:
+    desc: Lint the code with golangci-lint
+    cmds:
+      - '{{ .TOOL_DIR }}/golangci-lint run ./...'
+
+  lint:
+    desc: Lint all
+    dir: 'cmd/{{.NAME}}'
+    cmds:
+      - task: lint:go
+
+  ci:
+    desc: Run all CI steps
+    cmds:
+      - task: tools
+      - task: setup
+      - task: fmt
+      - task: lint
+
+  docs:generate:
+    desc: Generate docs
+    cmds:
+      - cp -rf CONTRIBUTING.md www/docs/contributing.md
+      - cp -rf DEVELOPMENT.md www/docs/development.md
+      - cp -rf USERS.md www/docs/users.md
+      - cp -rf SECURITY.md www/docs/security.md
+    sources:
+      - DEVELOPMENT.md
+      - CONTRIBUTING.md
+      - USERS.md
+      - SECURITY.md
+    generates:
+      - www/docs/development.md
+      - www/docs/contributing.md
+      - www/docs/users.md
+      - www/docs/security.md
+
+  docs:serve:
+    desc: Start documentation server
+    cmds:
+      - task: docs:generate
+      - '{{.DOCKER}} run --rm -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
+
+  docs:build:
+    desc: Build docs
+    cmds:
+      - task: docs:generate
+      - '{{.DOCKER}} run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build'
+
+  release:
+    desc: Create a new tag
+    vars:
+      NEXT:
+        sh: svu n
+    cmds:
+      - git tag {{.NEXT}}
+      - echo {{.NEXT}}
+      - git push origin --tags
+
+  goreleaser:snapshot:
+    desc: Run GoReleaser either in snapshot or release mode
+    cmds:
+      - goreleaser release --clean --snapshot
+
+  goreleaser:
+    desc: Run GoReleaser either in snapshot or release mode
+    cmds:
+      - goreleaser release --clean

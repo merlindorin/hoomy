@@ -125,21 +125,25 @@ func WithDomain(d string) WithParam {
 		c.Domain = d
 	}
 }
+
 func WithTimeout(t time.Duration) WithParam {
 	return func(c *Discover) {
 		c.Timeout = t
 	}
 }
+
 func WithInterface(ifaces []net.Interface) WithParam {
 	return func(c *Discover) {
 		c.Ifaces = ifaces
 	}
 }
+
 func WithDisableIPv4() WithParam {
 	return func(c *Discover) {
 		c.DisableIPv4 = true
 	}
 }
+
 func WithDisableIPv6() WithParam {
 	return func(c *Discover) {
 		c.DisableIPv6 = true
