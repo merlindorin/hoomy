@@ -11,8 +11,7 @@ import (
 )
 
 type Client interface {
-	Do(ctx context.Context, method, path string, b io.Reader) (res *http.Response, err error)
-	DoParams(ctx context.Context, params ...WithParam) (res *http.Response, err error)
+	Do(ctx context.Context, params ...WithParam) (res *http.Response, err error)
 }
 
 type ResponseHandlerFunc func(response *http.Response) error

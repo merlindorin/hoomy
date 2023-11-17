@@ -14,13 +14,13 @@ func NewApiEvent(cl Client) *ApiEvent {
 }
 
 func (receiver *ApiEvent) Register(ctx context.Context, v *EventRegister) (*http.Response, error) {
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/register"), WithUnmarshalBody(v))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodPost), WithPath("/events/register"), WithUnmarshalBody(v))
 }
 
 func (receiver *ApiEvent) Fetch(ctx context.Context, eventRegister EventRegister, v *[]map[string]interface{}) (*http.Response, error) {
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/fetch", eventRegister.ID), WithUnmarshalBody(v))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/fetch", eventRegister.ID), WithUnmarshalBody(v))
 }
 
 func (receiver *ApiEvent) Unregister(ctx context.Context, listenerID string) (*http.Response, error) {
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/unregister", listenerID))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/unregister", listenerID))
 }

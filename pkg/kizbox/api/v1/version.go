@@ -14,5 +14,5 @@ func NewApiVersion(cl Client) *ApiVersion {
 }
 
 func (a *ApiVersion) Get(ctx context.Context, v *Version) (*http.Response, error) {
-	return a.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/apiVersion"), WithUnmarshalBody(v))
+	return a.cl.Do(ctx, WithMethod(http.MethodGet), WithPath("/apiVersion"), WithUnmarshalBody(v))
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/merlindorin/hoomy/cmd/hoomy/globals"
 	"github.com/merlindorin/hoomy/internal/cmd"
 	"github.com/merlindorin/hoomy/pkg/kizbox/api/v1"
+	"github.com/merlindorin/hoomy/pkg/kizbox/client"
 	"go.uber.org/zap"
 )
 

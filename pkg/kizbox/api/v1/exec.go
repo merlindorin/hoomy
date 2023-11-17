@@ -35,13 +35,13 @@ func (receiver *ApiExecution) Apply(ctx context.Context, execute Execute, s *App
 		return nil, err
 	}
 
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/exec/apply"), WithBody(bytes.NewReader(ex)))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodPost), WithPath("/exec/apply"), WithBody(bytes.NewReader(ex)), WithUnmarshalBody(s))
 }
 
 func (receiver *ApiExecution) Current(ctx context.Context, s *[]Execution) (*http.Response, error) {
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/exec/current"), WithUnmarshalBody(s))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodGet), WithPath("/exec/current"), WithUnmarshalBody(s))
 }
 
 func (receiver *ApiExecution) Get(ctx context.Context, execID string, s *Execution) (*http.Response, error) {
-	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/exec", execID), WithUnmarshalBody(s))
+	return receiver.cl.Do(ctx, WithMethod(http.MethodGet), WithPath("/exec/%s", execID), WithUnmarshalBody(s))
 }

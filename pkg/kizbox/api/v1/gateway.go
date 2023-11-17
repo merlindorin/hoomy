@@ -14,5 +14,5 @@ func NewApiGateway(cl Client) *ApiGateway {
 }
 
 func (a *ApiGateway) List(ctx context.Context, v *[]Gateway) (*http.Response, error) {
-	return a.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/gateways"), WithUnmarshalBody(v))
+	return a.cl.Do(ctx, WithMethod(http.MethodGet), WithPath("/setup/gateways"), WithUnmarshalBody(v))
 }

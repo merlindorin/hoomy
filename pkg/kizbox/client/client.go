@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 
@@ -54,7 +53,7 @@ func NewClient(addr, apiKey string) *ApiClient {
 	return apiClient
 }
 
-func (cl *ApiClient) DoParams(ctx context.Context, params ...v1.WithParam) (res *http.Response, err error) {
+func (cl *ApiClient) Do(ctx context.Context, params ...v1.WithParam) (res *http.Response, err error) {
 	p := &v1.Params{
 		Method:           "GET",
 		Path:             "/",
@@ -96,8 +95,4 @@ func (cl *ApiClient) DoParams(ctx context.Context, params ...v1.WithParam) (res 
 	}
 
 	return res, nil
-}
-
-func (cl *ApiClient) Do(ctx context.Context, method, path string, b io.Reader) (res *http.Response, err error) {
-	return cl.DoParams(ctx, v1.WithMethod(method), v1.WithPath(path), v1.WithBody(b))
 }
