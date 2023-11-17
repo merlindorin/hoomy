@@ -2,8 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -15,33 +13,14 @@ func NewApiEvent(cl Client) *ApiEvent {
 	return &ApiEvent{cl: cl}
 }
 
-func (a *ApiEvent) Register(ctx context.Context, e *EventRegister) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodPost, "/events/register", nil)
-	if err != nil {
-		return res, err
-	}
-
-	if e == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, e)
+func (receiver *ApiEvent) Register(ctx context.Context, v *EventRegister) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/register"), WithUnmarshalBody(v))
 }
 
-func (a *ApiEvent) Fetch(ctx context.Context, eventRegister EventRegister, e *[]map[string]interface{}) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodPost, fmt.Sprintf("/events/%s/fetch", eventRegister.ID), nil)
-	if err != nil {
-		return res, err
-	}
-
-	if e == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, e)
+func (receiver *ApiEvent) Fetch(ctx context.Context, eventRegister EventRegister, v *[]map[string]interface{}) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/fetch", eventRegister.ID), WithUnmarshalBody(v))
 }
 
-func (a *ApiEvent) Unregister(ctx context.Context, listenerID string) (*http.Response, error) {
-	_, res, err := a.cl.Do(ctx, http.MethodPost, fmt.Sprintf("/events/%s/unregister", listenerID), nil)
-	return res, err
+func (receiver *ApiEvent) Unregister(ctx context.Context, listenerID string) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/events/%s/unregister", listenerID))
 }

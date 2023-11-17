@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 )
 
@@ -15,14 +14,5 @@ func NewApiVersion(cl Client) *ApiVersion {
 }
 
 func (a *ApiVersion) Get(ctx context.Context, v *Version) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, "/apiVersion", nil)
-	if err != nil {
-		return res, err
-	}
-
-	if v == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, v)
+	return a.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/apiVersion"), WithUnmarshalBody(v))
 }

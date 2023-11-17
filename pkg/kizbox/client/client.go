@@ -1,7 +1,6 @@
-package kizbox
+package client
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -16,7 +15,7 @@ const (
 	apiPath = "/enduser-mobile-web/1/enduserAPI"
 )
 
-type Client struct {
+type ApiClient struct {
 	addr string
 	cl   *http.Client
 
@@ -32,13 +31,13 @@ type V1 struct {
 	Event     *v1.ApiEvent
 }
 
-func NewClient(addr, apiKey string) *Client {
+func NewClient(addr, apiKey string) *ApiClient {
 	cl := http.DefaultClient
 	cl.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	apiClient := &Client{
+	apiClient := &ApiClient{
 		addr:   addr,
 		cl:     cl,
 		apiKey: apiKey,
@@ -55,15 +54,26 @@ func NewClient(addr, apiKey string) *Client {
 	return apiClient
 }
 
-func (cl *Client) Do(ctx context.Context, method, path string, b io.Reader) (body []byte, res *http.Response, err error) {
-	u, err := url.JoinPath(fmt.Sprintf("https://%s", cl.addr), apiPath, path)
-	if err != nil {
-		return nil, nil, err
+func (cl *ApiClient) DoParams(ctx context.Context, params ...v1.WithParam) (res *http.Response, err error) {
+	p := &v1.Params{
+		Method:           "GET",
+		Path:             "/",
+		Body:             nil,
+		ResponseHandlers: nil,
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, u, b)
+	for _, param := range params {
+		param.Apply(p)
+	}
+
+	u, err := url.JoinPath(fmt.Sprintf("https://%s", cl.addr), apiPath, p.Path)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, p.Method, u, p.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cl.apiKey))
@@ -71,19 +81,23 @@ func (cl *Client) Do(ctx context.Context, method, path string, b io.Reader) (bod
 
 	res, err = cl.cl.Do(req)
 	if err != nil {
-		return nil, res, err
+		return res, err
 	}
 
 	if res.StatusCode >= 400 {
-		return nil, res, fmt.Errorf("unexcpected response status code %d: %s", res.StatusCode, http.StatusText(res.StatusCode))
+		return res, fmt.Errorf("unexcpected response status code %d: %s", res.StatusCode, http.StatusText(res.StatusCode))
 	}
 
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		return nil, res, err
+	for _, responseHandler := range p.ResponseHandlers {
+		err = responseHandler(res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	res.Body = io.NopCloser(bytes.NewBuffer(body))
+	return res, nil
+}
 
-	return body, res, nil
+func (cl *ApiClient) Do(ctx context.Context, method, path string, b io.Reader) (res *http.Response, err error) {
+	return cl.DoParams(ctx, v1.WithMethod(method), v1.WithPath(path), v1.WithBody(b))
 }

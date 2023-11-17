@@ -2,8 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -16,67 +14,22 @@ func NewApiDevices(cl Client) *ApiDevices {
 	return &ApiDevices{cl: cl}
 }
 
-func (a *ApiDevices) List(ctx context.Context, devices *[]Device) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, "/setup/devices", nil)
-	if err != nil {
-		return res, err
-	}
-
-	if devices == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, devices)
+func (receiver *ApiDevices) List(ctx context.Context, v *[]Device) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/devices"), WithUnmarshalBody(v))
 }
 
-func (a *ApiDevices) Get(ctx context.Context, deviceURL string, d *Device) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/%s", url.PathEscape(deviceURL)), nil)
-	if err != nil {
-		return res, err
-	}
-
-	if d == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, d)
+func (receiver *ApiDevices) Get(ctx context.Context, deviceURL string, v *Device) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/devices/%s", url.PathEscape(deviceURL)), WithUnmarshalBody(v))
 }
 
-func (a *ApiDevices) States(ctx context.Context, deviceURL string, s *[]State) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/%s/states", url.PathEscape(deviceURL)), nil)
-	if err != nil {
-		return res, err
-	}
-
-	if s == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, s)
+func (receiver *ApiDevices) States(ctx context.Context, deviceURL string, v *[]State) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/devices/%s/states", url.PathEscape(deviceURL)), WithUnmarshalBody(v))
 }
 
-func (a *ApiDevices) State(ctx context.Context, deviceURL string, stateName string, s *State) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/%s/states/%s", url.PathEscape(deviceURL), stateName), nil)
-	if err != nil {
-		return res, err
-	}
-
-	if s == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, s)
+func (receiver *ApiDevices) State(ctx context.Context, deviceURL string, stateName string, v *State) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/devices/%s/states/%s", url.PathEscape(deviceURL), stateName), WithUnmarshalBody(v))
 }
 
-func (a *ApiDevices) Controllables(ctx context.Context, controllableName string, s *[]string) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/controllables/%s", url.PathEscape(controllableName)), nil)
-	if err != nil {
-		return res, err
-	}
-
-	if s == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, s)
+func (receiver *ApiDevices) Controllables(ctx context.Context, controllableName string, v *[]string) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/setup/devices/controllables/%s", url.PathEscape(controllableName)), WithUnmarshalBody(v))
 }

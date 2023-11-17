@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/url"
 )
 
 type ApiExecution struct {
@@ -20,7 +19,7 @@ type Apply struct {
 	ID string `json:"id"`
 }
 
-func (a *ApiExecution) Apply(ctx context.Context, execute Execute, s *Apply) (*http.Response, error) {
+func (receiver *ApiExecution) Apply(ctx context.Context, execute Execute, s *Apply) (*http.Response, error) {
 	// patch resource to ensure it is acceptable
 	for i, action := range execute.Actions {
 		for j, command := range action.Commands {
@@ -36,45 +35,13 @@ func (a *ApiExecution) Apply(ctx context.Context, execute Execute, s *Apply) (*h
 		return nil, err
 	}
 
-	body, res, err := a.cl.Do(ctx, http.MethodPost, "/exec/apply", bytes.NewReader(ex))
-	if err != nil {
-		return res, err
-	}
-
-	if s != nil {
-		return res, json.Unmarshal(body, s)
-	}
-
-	return res, nil
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodPost), WithPath("/exec/apply"), WithBody(bytes.NewReader(ex)))
 }
 
-func (a *ApiExecution) Current(ctx context.Context, s *[]Execution) (*http.Response, error) {
-	body, res, err := a.cl.Do(ctx, http.MethodGet, "/exec/current", nil)
-	if err != nil {
-		return res, err
-	}
-
-	if s == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, s)
+func (receiver *ApiExecution) Current(ctx context.Context, s *[]Execution) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/exec/current"), WithUnmarshalBody(s))
 }
 
-func (a *ApiExecution) Get(ctx context.Context, execID string, s *Execution) (*http.Response, error) {
-	path, err := url.JoinPath("/exec", execID)
-	if err != nil {
-		return nil, err
-	}
-
-	body, res, err := a.cl.Do(ctx, http.MethodGet, path, nil)
-	if err != nil {
-		return res, err
-	}
-
-	if s == nil {
-		return res, nil
-	}
-
-	return res, json.Unmarshal(body, s)
+func (receiver *ApiExecution) Get(ctx context.Context, execID string, s *Execution) (*http.Response, error) {
+	return receiver.cl.DoParams(ctx, WithMethod(http.MethodGet), WithPath("/exec", execID), WithUnmarshalBody(s))
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/merlindorin/hoomy/cmd/hoomy/filter"
 	"github.com/merlindorin/hoomy/cmd/hoomy/globals"
 	"github.com/merlindorin/hoomy/internal/cmd"
-	"github.com/merlindorin/hoomy/pkg/kizbox"
 	"github.com/merlindorin/hoomy/pkg/kizbox/api/v1"
 	"go.uber.org/zap"
 )
@@ -25,6 +24,7 @@ type VenitianCmd struct {
 	Set   VenitianSetCmd   `cmd:"set" help:"Set stores. By default, it will set all stores"`
 	Open  VenitianOpenCmd  `cmd:"open" help:"Open stores. By default, it will open all stores"`
 	Close VenitianCloseCmd `cmd:"close" help:"Close stores. By default, it will close all stores"`
+	Stop  VenitianStopCmd  `cmd:"stop" help:"Stop stores. By default, it will stop all stores"`
 	Wink  VenitianWinkCmd  `cmd:"wink" help:"Wink stores. By default, it will wink all stores"`
 	My    VenitianMyCmd    `cmd:"my" help:"Go to my position. By default, it will my all stores"`
 }
@@ -193,6 +193,25 @@ func (s VenitianWinkCmd) Run(global *globals.Globals, common *cmd.Commons, paren
 	return nil
 }
 
+type VenitianStopCmd struct{}
+
+func (s VenitianStopCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
+	logger, err := common.Logger()
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	api := global.Client()
+
+	_, err = DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "stop"})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type VenitianCloseCmd struct{}
 
 func (s VenitianCloseCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
@@ -212,7 +231,7 @@ func (s VenitianCloseCmd) Run(global *globals.Globals, common *cmd.Commons, pare
 	return nil
 }
 
-func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Logger, controllers []string, filter filter.Filter, commands ...v1.Command) (*http.Response, error) {
+func DispatchDeviceAction(ctx context.Context, cl *client.ApiClient, logger *zap.Logger, controllers []string, filter filter.Filter, commands ...v1.Command) (*http.Response, error) {
 	devices, res, err := DeviceList(ctx, cl, controllers, filter)
 	if err != nil {
 		logger.Error("cannot list device", zap.Any("res", res))
@@ -221,6 +240,7 @@ func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Lo
 
 	var actions []v1.Action
 	for _, device := range devices {
+		logger.Debug("open device", zap.Any("device", device))
 		action := v1.Action{
 			Commands:  commands,
 			DeviceURL: device.DeviceURL,
@@ -229,12 +249,10 @@ func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Lo
 		actions = append(actions, action)
 	}
 
-	res, err = cl.V1.Execution.Apply(ctx, v1.Execute{Label: "cli command test", Actions: actions}, nil)
-
-	return res, err
+	return cl.V1.Execution.Apply(ctx, v1.Execute{Label: "cli command test", Actions: actions}, nil)
 }
 
-func DeviceList(ctx context.Context, cl *kizbox.Client, controllers []string, filter filter.Filter) ([]v1.Device, *http.Response, error) {
+func DeviceList(ctx context.Context, cl *client.ApiClient, controllers []string, filter filter.Filter) ([]v1.Device, *http.Response, error) {
 	var allDevices []v1.Device
 	res, err := cl.V1.Devices.List(ctx, &allDevices)
 	if err != nil {

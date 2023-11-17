@@ -3,7 +3,7 @@ package globals
 import (
 	"fmt"
 
-	"github.com/merlindorin/hoomy/pkg/kizbox"
+	"github.com/merlindorin/hoomy/pkg/kizbox/client"
 )
 
 type Globals struct {
@@ -12,6 +12,6 @@ type Globals struct {
 	Port   int    `default:"8443" help:"port of the Kizbox"`
 }
 
-func (c *Globals) Client() *kizbox.Client {
-	return kizbox.NewClient(fmt.Sprintf("%s:%d", c.Host, c.Port), c.ApiKey)
+func (c *Globals) Client() *client.ApiClient {
+	return client.NewClient(fmt.Sprintf("%s:%d", c.Host, c.Port), c.ApiKey)
 }
