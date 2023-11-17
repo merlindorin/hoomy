@@ -16,11 +16,11 @@ func NewApiExecution(cl Client) *ApiExecution {
 	return &ApiExecution{cl: cl}
 }
 
-type ApplyResponse struct {
+type Apply struct {
 	ID string `json:"id"`
 }
 
-func (a *ApiExecution) Apply(ctx context.Context, execute Execute, s *ApplyResponse) (*http.Response, error) {
+func (a *ApiExecution) Apply(ctx context.Context, execute Execute, s *Apply) (*http.Response, error) {
 	// patch resource to ensure it is acceptable
 	for i, action := range execute.Actions {
 		for j, command := range action.Commands {
@@ -54,6 +54,10 @@ func (a *ApiExecution) Current(ctx context.Context, s *[]Execution) (*http.Respo
 		return res, err
 	}
 
+	if s == nil {
+		return res, nil
+	}
+
 	return res, json.Unmarshal(body, s)
 }
 
@@ -66,6 +70,10 @@ func (a *ApiExecution) Get(ctx context.Context, execID string, s *Execution) (*h
 	body, res, err := a.cl.Do(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return res, err
+	}
+
+	if s == nil {
+		return res, nil
 	}
 
 	return res, json.Unmarshal(body, s)

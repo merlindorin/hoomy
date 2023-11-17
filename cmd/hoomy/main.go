@@ -23,7 +23,7 @@ type CLI struct {
 	*globals.Globals
 
 	Venitian commands.VenitianCmd `cmd:"venitians"`
-	Devices  commands.DevicesCmd  `cmd:"devices" help:"list devices availables in the current system"`
+	Devices  commands.DeviceCmd   `cmd:"devices" help:"list devices availables in the current system"`
 	Listen   commands.ListenCmd   `cmd:"listen" help:"listen events in the current system"`
 	Discover commands.DiscoverCmd `cmd:"discover" help:"list for systems available"`
 }

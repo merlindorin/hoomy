@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"slices"
 
@@ -24,6 +25,8 @@ type VenitianCmd struct {
 	Set   VenitianSetCmd   `cmd:"set" help:"Set stores. By default, it will set all stores"`
 	Open  VenitianOpenCmd  `cmd:"open" help:"Open stores. By default, it will open all stores"`
 	Close VenitianCloseCmd `cmd:"close" help:"Close stores. By default, it will close all stores"`
+	Wink  VenitianWinkCmd  `cmd:"wink" help:"Wink stores. By default, it will wink all stores"`
+	My    VenitianMyCmd    `cmd:"my" help:"Go to my position. By default, it will my all stores"`
 }
 
 type VenitianListCmd struct{}
@@ -61,12 +64,21 @@ func (s VenitianOpenCmd) Run(global *globals.Globals, common *cmd.Commons, paren
 	ctx := context.Background()
 	api := global.Client()
 
-	return DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "open"})
+	_, err = DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "open"})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type VenitianSetCmd struct {
-	Position    *int
-	Orientation *int
+	Position             *int
+	Orientation          *int
+	Closure              *int
+	Name                 *string
+	MemorizedPosition    *int
+	MemorizedOrientation *int
 }
 
 func (s VenitianSetCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
@@ -95,7 +107,90 @@ func (s VenitianSetCmd) Run(global *globals.Globals, common *cmd.Commons, parent
 		})
 	}
 
-	return DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, commands...)
+	if s.Closure != nil {
+		commands = append(commands, v1.Command{
+			Name:       "setClosure",
+			Parameters: []interface{}{s.Closure},
+		})
+	}
+
+	if s.Name != nil {
+		commands = append(commands, v1.Command{
+			Name:       "setName",
+			Parameters: []interface{}{s.Name},
+		})
+	}
+
+	if s.MemorizedPosition != nil {
+		commands = append(commands, v1.Command{
+			Name:       "setMemorized1Position",
+			Parameters: []interface{}{s.MemorizedPosition},
+		})
+	}
+
+	if s.MemorizedOrientation != nil {
+		commands = append(commands, v1.Command{
+			Name:       "setMemorized1Orientation",
+			Parameters: []interface{}{s.MemorizedPosition},
+		})
+	}
+
+	commands = append(commands, v1.Command{
+		Name:       "setMemorized1Position",
+		Parameters: []interface{}{60},
+	})
+
+	commands = append(commands, v1.Command{
+		Name:       "setMemorized1Orientation",
+		Parameters: []interface{}{0},
+	})
+
+	res, err := DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, commands...)
+	if err != nil {
+		all, _ := io.ReadAll(res.Body)
+		logger.Error("cannot dispatch", zap.Error(err), zap.Int("statusCode", res.StatusCode), zap.ByteString("body", all))
+		return err
+	}
+
+	return nil
+}
+
+type VenitianMyCmd struct{}
+
+func (s VenitianMyCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
+	logger, err := common.Logger()
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	api := global.Client()
+
+	_, err = DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "my"})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type VenitianWinkCmd struct{}
+
+func (s VenitianWinkCmd) Run(global *globals.Globals, common *cmd.Commons, parent *VenitianCmd) error {
+	logger, err := common.Logger()
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	api := global.Client()
+
+	_, err = DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "wink"})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type VenitianCloseCmd struct{}
@@ -109,14 +204,19 @@ func (s VenitianCloseCmd) Run(global *globals.Globals, common *cmd.Commons, pare
 	ctx := context.Background()
 	api := global.Client()
 
-	return DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "close"})
+	_, err = DispatchDeviceAction(ctx, api, logger, []string{ControllableName}, parent.Filter, v1.Command{Name: "close"})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Logger, controllers []string, filter filter.Filter, commands ...v1.Command) error {
+func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Logger, controllers []string, filter filter.Filter, commands ...v1.Command) (*http.Response, error) {
 	devices, res, err := DeviceList(ctx, cl, controllers, filter)
 	if err != nil {
 		logger.Error("cannot list device", zap.Any("res", res))
-		return err
+		return res, err
 	}
 
 	var actions []v1.Action
@@ -129,9 +229,9 @@ func DispatchDeviceAction(ctx context.Context, cl *kizbox.Client, logger *zap.Lo
 		actions = append(actions, action)
 	}
 
-	_, err = cl.V1.Execution.Apply(ctx, v1.Execute{Label: "cli command test", Actions: actions}, nil)
+	res, err = cl.V1.Execution.Apply(ctx, v1.Execute{Label: "cli command test", Actions: actions}, nil)
 
-	return err
+	return res, err
 }
 
 func DeviceList(ctx context.Context, cl *kizbox.Client, controllers []string, filter filter.Filter) ([]v1.Device, *http.Response, error) {

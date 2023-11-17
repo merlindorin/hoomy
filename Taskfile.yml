@@ -33,7 +33,7 @@ tasks:
 
   tools:
     desc: Install all tools needed for CI and local development
-    deps: [binny]
+    deps: [ binny ]
     aliases:
       - bootstrap
     generates:
@@ -46,7 +46,7 @@ tasks:
 
   update-tools:
     desc: Update pinned versions of all tools to their latest available versions
-    deps: [binny]
+    deps: [ binny ]
     generates:
       - ".binny.yaml"
       - "{{ .TOOL_DIR }}/*"
@@ -55,13 +55,13 @@ tasks:
 
   list-tools:
     desc: List all tools needed for CI and local development
-    deps: [binny]
+    deps: [ binny ]
     cmd: "{{ .TOOL_DIR }}/binny list"
     silent: true
 
   list-tool-updates:
     desc: List all tools that are not up to date relative to the binny config
-    deps: [binny]
+    deps: [ binny ]
     cmd: "{{ .TOOL_DIR }}/binny list --updates"
     silent: true
 
@@ -77,13 +77,13 @@ tasks:
 
   build:
     desc: Build the binary
-    dir: 'cmd/{{.NAME}}'
     generates:
-      - '{{.NAME}}/{{.BINARY_NAME}}'
+      - '{{.TOOL_DIR }}/{{.BINARY_NAME}}'
     cmds:
-      - go build -o {{.BINARY_NAME}} {{.CLI_ARGS}}
+      - 'go build -o {{.TOOL_DIR}}/{{.BINARY_NAME}} cmd/{{.NAME}}/main.go {{.CLI_ARGS}}'
 
   run:
+    silent: true
     desc: Run the binary
     method: none
     dir: 'cmd/{{.NAME}}'

@@ -21,6 +21,10 @@ func (a *ApiEvent) Register(ctx context.Context, e *EventRegister) (*http.Respon
 		return res, err
 	}
 
+	if e == nil {
+		return res, nil
+	}
+
 	return res, json.Unmarshal(body, e)
 }
 
@@ -28,6 +32,10 @@ func (a *ApiEvent) Fetch(ctx context.Context, eventRegister EventRegister, e *[]
 	body, res, err := a.cl.Do(ctx, http.MethodPost, fmt.Sprintf("/events/%s/fetch", eventRegister.ID), nil)
 	if err != nil {
 		return res, err
+	}
+
+	if e == nil {
+		return res, nil
 	}
 
 	return res, json.Unmarshal(body, e)

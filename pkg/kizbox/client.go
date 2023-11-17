@@ -1,6 +1,7 @@
 package kizbox
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -81,6 +82,8 @@ func (cl *Client) Do(ctx context.Context, method, path string, b io.Reader) (bod
 	if err != nil {
 		return nil, res, err
 	}
+
+	res.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	return body, res, nil
 }

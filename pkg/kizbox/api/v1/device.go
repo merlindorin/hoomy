@@ -22,13 +22,21 @@ func (a *ApiDevices) List(ctx context.Context, devices *[]Device) (*http.Respons
 		return res, err
 	}
 
-	return res, json.Unmarshal(body, &devices)
+	if devices == nil {
+		return res, nil
+	}
+
+	return res, json.Unmarshal(body, devices)
 }
 
 func (a *ApiDevices) Get(ctx context.Context, deviceURL string, d *Device) (*http.Response, error) {
 	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/%s", url.PathEscape(deviceURL)), nil)
 	if err != nil {
 		return res, err
+	}
+
+	if d == nil {
+		return res, nil
 	}
 
 	return res, json.Unmarshal(body, d)
@@ -40,6 +48,10 @@ func (a *ApiDevices) States(ctx context.Context, deviceURL string, s *[]State) (
 		return res, err
 	}
 
+	if s == nil {
+		return res, nil
+	}
+
 	return res, json.Unmarshal(body, s)
 }
 
@@ -49,6 +61,10 @@ func (a *ApiDevices) State(ctx context.Context, deviceURL string, stateName stri
 		return res, err
 	}
 
+	if s == nil {
+		return res, nil
+	}
+
 	return res, json.Unmarshal(body, s)
 }
 
@@ -56,6 +72,10 @@ func (a *ApiDevices) Controllables(ctx context.Context, controllableName string,
 	body, res, err := a.cl.Do(ctx, http.MethodGet, fmt.Sprintf("/setup/devices/controllables/%s", url.PathEscape(controllableName)), nil)
 	if err != nil {
 		return res, err
+	}
+
+	if s == nil {
+		return res, nil
 	}
 
 	return res, json.Unmarshal(body, s)

@@ -20,5 +20,9 @@ func (a *ApiVersion) Get(ctx context.Context, v *Version) (*http.Response, error
 		return res, err
 	}
 
+	if v == nil {
+		return res, nil
+	}
+
 	return res, json.Unmarshal(body, v)
 }
